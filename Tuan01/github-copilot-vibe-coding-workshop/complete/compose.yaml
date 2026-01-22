@@ -1,0 +1,39 @@
+version: '3.8'
+
+networks:
+  contoso:
+    driver: bridge
+
+services:
+  contoso-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.java
+    container_name: contoso-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - CODESPACE_NAME=${CODESPACE_NAME}
+      - GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN=${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}
+    networks:
+      - contoso
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 60s
+      retries: 3
+
+  contoso-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dotnet
+    container_name: contoso-frontend
+    ports:
+      - "3030:8080"
+    environment:
+      - ApiSettings__BaseUrl=http://contoso-backend:8080/api
+    networks:
+      - contoso
+    depends_on:
+      - contoso-backend

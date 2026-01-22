@@ -1,0 +1,16 @@
+{
+  "name": "github-copilot-vibe-coding-workshop",
+  "version": "1.0.0",
+  "description": "![GitHub Copilot Vibe Coding Workshop](./images/banner.png)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
