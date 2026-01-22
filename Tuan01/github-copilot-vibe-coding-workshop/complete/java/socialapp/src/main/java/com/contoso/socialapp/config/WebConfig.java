@@ -20,12 +20,12 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOriginPatterns("http://localhost:8080", "http://contoso-backend:8080", "https://*.app.github.dev")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH")
-                        .allowedHeaders("*")
-                        .allowCredentials(true)
-                        .maxAge(3600);
+                    registry.addMapping("/**")
+                            .allowedOrigins("*")
+                            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH")
+                            .allowedHeaders("*")
+                            .allowCredentials(false)
+                            .maxAge(3600);
             }
         };
     }
