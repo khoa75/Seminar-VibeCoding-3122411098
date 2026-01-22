@@ -8,8 +8,7 @@ from typing import List
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-import yaml
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 import os
 
 from models import (
@@ -24,13 +23,8 @@ from database import (
 
 
 # Load OpenAPI specification
-def load_openapi_spec():
-    """Load the OpenAPI specification from file."""
-    try:
-        with open("openapi.yaml", "r") as f:
-            return yaml.safe_load(f)
-    except FileNotFoundError:
-        return None
+
+OPENAPI_YAML_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../openapi.yaml'))
 
 
 # Lifespan context manager for startup/shutdown events
@@ -67,16 +61,45 @@ app.add_middleware(
 )
 
 
-# Custom OpenAPI endpoint
-@app.get("/openapi.json")
-async def get_openapi():
-    """Return the OpenAPI specification."""
-    openapi_spec = load_openapi_spec()
-    if openapi_spec:
-        # Update server URL to match our port
-        openapi_spec["servers"] = [{"url": "http://localhost:8000", "description": "Local development server"}]
-        return openapi_spec
-    return app.openapi()
+
+# Serve the exact OpenAPI YAML at /openapi.yaml
+@app.get("/openapi.yaml", include_in_schema=False)
+async def get_openapi_yaml():
+    return FileResponse(OPENAPI_YAML_PATH, media_type="text/yaml")
+
+# Custom Swagger UI that loads the provided openapi.yaml
+@app.get("/", include_in_schema=False)
+async def custom_swagger_ui():
+    html_content = '''
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Swagger UI</title>
+        <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css" />
+        <style>body { margin: 0; padding: 0; }</style>
+    </head>
+    <body>
+        <div id="swagger-ui"></div>
+        <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+        <script>
+        window.onload = function() {
+            window.ui = SwaggerUIBundle({
+                url: '/openapi.yaml',
+                dom_id: '#swagger-ui',
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIBundle.SwaggerUIStandalonePreset
+                ],
+                layout: "BaseLayout",
+                deepLinking: true
+            });
+        };
+        </script>
+    </body>
+    </html>
+    '''
+    return HTMLResponse(content=html_content, status_code=200)
 
 
 # Posts endpoints
