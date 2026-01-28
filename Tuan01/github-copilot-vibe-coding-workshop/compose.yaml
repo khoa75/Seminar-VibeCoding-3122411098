@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  contoso-backend:
+    container_name: contoso-backend
+    build:
+      context: ./complete/java/socialapp
+      dockerfile: ../../../Dockerfile.java
+    ports:
+      - "8080:8080"
+    environment:
+      - CODESPACE_NAME=${CODESPACE_NAME}
+      - GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN=${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}
+    networks:
+      - contoso
+    restart: unless-stopped
+
+  contoso-frontend:
+    container_name: contoso-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile.dotnet
+    ports:
+      - "3030:8080"
+    environment:
+      - ApiSettings__BaseUrl=http://contoso-backend:8080/api
+    depends_on:
+      - contoso-backend
+    networks:
+      - contoso
+    restart: unless-stopped
+
+networks:
+  contoso:
+    name: contoso
